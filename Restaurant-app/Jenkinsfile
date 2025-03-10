@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    environment {
+        GITHUB_REPO = 'https://github.com/mohdshafaquearif/Restraunt.git'  
+        FRONTEND_IMAGE = 'restaurant-frontend'
+        BACKEND_IMAGE = 'restaurant-backend'
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: "${GITHUB_REPO}"
+            }
+        }
+
+       
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    sh 'docker build -t ${FRONTEND_IMAGE} ./frontend'
+                    sh 'docker build -t ${BACKEND_IMAGE} ./backend'
+                }
+            }
+        }
+
+        stage('Run Docker Compose') {
+            steps {
+                sh 'docker-compose up -d --build'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build and deployment completed successfully!'
+        }
+        failure {
+            echo 'Build failed! Check logs for details.'
+        }
+    }
+}
